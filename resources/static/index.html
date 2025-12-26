@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文创产品定制平台</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Microsoft YaHei';
+            background: #f5f7fa;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header .title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .header .user-info {
+            font-size: 16px;
+        }
+        .header .logout {
+            color: white;
+            text-decoration: underline;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .container {
+            display: flex;
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto;
+            gap: 20px;
+        }
+        .left-panel {
+            flex: 2;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .panel-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .upload-btn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .preview-box, .order-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .preview-img {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .query-btn {
+            width: 100%;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .order-item {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+        .order-item a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .header .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        .header .btn {
+            color: white;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="title">文创产品定制平台</div>
+    <div class="user-info">
+        当前用户: <span id="username"></span>
+        <div class="btn-group">
+            <span class="btn" onclick="window.location.href='chat.html'">客服聊天</span>
+            <span class="btn" onclick="logout()">退出登录</span>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="left-panel">
+        <div class="panel-title">产品定制信息</div>
+        <div class="form-group">
+            <label>产品类型</label>
+            <select id="productType" onchange="changeProductType()">
+                <option value="书签">书签</option>
+                <option value="保温杯">保温杯</option>
+                <option value="冰箱贴">冰箱贴</option>
+                <option value="帆布袋">帆布袋</option>
+                <option value="海报">海报</option>
+                <option value="折扇">折扇</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>尺寸</label>
+            <select id="size">
+                <option value="小号">小号</option>
+                <option value="中号">中号</option>
+                <option value="大号">大号</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>材质</label>
+            <select id="material">
+                <option value="铜版纸">铜版纸</option>
+                <option value="牛皮纸">牛皮纸</option>
+                <option value="特种纸">特种纸</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>定制数量</label>
+            <input type="number" id="quantity" value="1" min="1">
+        </div>
+        <div class="form-group">
+            <label>期望到货日期</label>
+            <input type="date" id="expectDate">
+        </div>
+        <div class="form-group">
+            <label>期望到货时长（天）</label>
+            <input type="number" id="expectDays" value="7" min="1">
+        </div>
+        <div class="form-group">
+            <label>上传定制图案</label>
+            <button class="upload-btn" onclick="document.getElementById('image').click()">选择图片</button>
+            <input type="file" id="image" accept="image/*" style="display: none;" onchange="previewImage()">
+            <p>支持JPG/PNG格式，最大10MB</p>
+        </div>
+        <div class="form-group">
+            <label>联系方式</label>
+            <input type="text" id="contact" placeholder="请输入手机号" value="12345678911">
+        </div>
+        <button class="submit-btn" onclick="createOrder()">提交定制订单</button>
+        <div id="orderResult" style="margin-top: 20px; padding: 10px; border: 1px solid #eee; border-radius: 8px; display: none;">
+            <p>Order created successfully, Order ID: <span id="newOrderId"></span>, Status: pending review</p>
+            <a href="" id="orderDetailLink">点击查看订单详情</a>
+        </div>
+    </div>
+    <div class="right-panel">
+        <div class="preview-box">
+            <div class="panel-title">图案预览</div>
+            <img class="preview-img" id="previewImg" src="images/bookmark.png" alt="预览图">
+        </div>
+        <div class="order-box">
+            <div class="panel-title">订单查询</div>
+            <button class="query-btn" onclick="queryOrders()">查询订单状态</button>
+            <div id="orderList" class="order-list"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 产品类型、尺寸、材质联动数据
+    const productConfig = {
+        "书签": {
+            sizes: ["小号", "中号", "大号"],
+            materials: ["铜版纸", "牛皮纸", "特种纸"]
+        },
+        "保温杯": {
+            sizes: ["300ml", "500ml", "750ml"],
+            materials: ["304不锈钢", "陶瓷", "玻璃"]
+        },
+        "冰箱贴": {
+            sizes: ["3cm×3cm", "5cm×5cm", "8cm×8cm"],
+            materials: ["软磁贴", "硬磁贴", "亚克力"]
+        },
+        "帆布袋": {
+            sizes: ["小号(30×40cm)", "中号(40×50cm)", "大号(50×60cm)"],
+            materials: ["纯棉", "帆布", "牛津布"]
+        },
+        "海报": {
+            sizes: ["A4", "A3", "A2"],
+            materials: ["铜版纸", "相纸", "油画布"]
+        },
+        "折扇": {
+            sizes: ["8寸", "10寸", "12寸"],
+            materials: ["宣纸", "绢布", "竹制"]
+        }
+    };
+
+    // 验证登录
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) window.location.href = "login.html";
+    document.getElementById("username").textContent = user.username;
+
+    // 产品类型切换联动尺寸和材质
+    function changeProductType() {
+        const productType = document.getElementById("productType").value;
+        const sizeSelect = document.getElementById("size");
+        const materialSelect = document.getElementById("material");
+
+        // 清空原有选项
+        sizeSelect.innerHTML = "";
+        materialSelect.innerHTML = "";
+
+        // 添加新尺寸选项
+        productConfig[productType].sizes.forEach(size => {
+            const option = document.createElement("option");
+            option.value = size;
+            option.textContent = size;
+            sizeSelect.appendChild(option);
+        });
+
+        // 添加新材质选项
+        productConfig[productType].materials.forEach(material => {
+            const option = document.createElement("option");
+            option.value = material;
+            option.textContent = material;
+            materialSelect.appendChild(option);
+        });
+    }
+
+    // 预览图片（Base64存储）
+    let imageBase64 = "";
+    function previewImage() {
+        const file = document.getElementById("image").files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                imageBase64 = e.target.result;
+                document.getElementById("previewImg").src = imageBase64;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // 创建订单 - 优化：创建后自动查询订单
+    async function createOrder() {
+        const order = {
+            username: user.username,
+            productType: document.getElementById("productType").value,
+            size: document.getElementById("size").value,
+            material: document.getElementById("material").value,
+            quantity: parseInt(document.getElementById("quantity").value),
+            expectDate: document.getElementById("expectDate").value ? new Date(document.getElementById("expectDate").value) : null,
+            expectDays: parseInt(document.getElementById("expectDays").value),
+            imagePath: imageBase64 || "images/bookmark.png",
+            contact: document.getElementById("contact").value
+        };
+        const res = await fetch("/api/order/create", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(order)
+        });
+        const data = await res.json();
+        if (data.code === 200) {
+            const resultBox = document.getElementById("orderResult");
+            resultBox.style.display = "block";
+            document.getElementById("newOrderId").textContent = data.data.id;
+            document.getElementById("orderDetailLink").href = `order-detail.html?id=${data.data.id}`;
+            // 创建订单后自动刷新订单列表
+            queryOrders();
+        }
+    }
+
+    // 查询订单 - 核心优化：每次查询都请求最新数据，不缓存
+    async function queryOrders() {
+        // 强制添加时间戳，防止浏览器缓存请求
+        const timestamp = new Date().getTime();
+        const res = await fetch(`/api/order/user/${user.username}?t=${timestamp}`);
+        const data = await res.json();
+        const orderList = document.getElementById("orderList");
+        orderList.innerHTML = "";
+        if (data.data && data.data.length > 0) {
+            data.data.forEach(order => {
+                const item = document.createElement("div");
+                item.className = "order-item";
+                item.innerHTML = `
+                        <p>订单ID：${order.id}</p>
+                        <p>产品类型：${order.productType}</p>
+                        <p>状态：<span style="color: #dc3545; font-weight: bold;">${order.status}</span></p>
+                        <a href="order-detail.html?id=${order.id}">点击查看完整订单详情</a>
+                    `;
+                orderList.appendChild(item);
+            });
+        } else {
+            orderList.innerHTML = "<p style='text-align: center; margin-top: 10px;'>暂无订单数据</p>";
+        }
+    }
+
+    // 退出登录
+    function logout() {
+        localStorage.removeItem("user");
+        window.location.href = "login.html";
+    }
+
+    // 页面加载时自动查询订单
+    window.onload = function() {
+        queryOrders();
+    }
+</script>
+</body>
+</html>

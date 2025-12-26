@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户注册</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            font-family: 'Microsoft YaHei';
+        }
+        .register-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            width: 350px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .register-box h2 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .register-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .tip {
+            margin-top: 10px;
+            font-size: 12px;
+            color: red;
+            min-height: 16px;
+        }
+        .rule {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+        .link {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="register-box">
+    <h2>用户注册</h2>
+    <div class="form-group">
+        <label>用户名</label>
+        <input type="text" id="username" placeholder="请输入用户名">
+    </div>
+    <div class="form-group">
+        <label>密码</label>
+        <input type="password" id="password" placeholder="请输入密码" oninput="checkPassword()">
+        <div class="rule">密码规则：必须包含字母、数字、下划线，长度6-20位</div>
+    </div>
+    <div class="form-group">
+        <label>确认密码</label>
+        <input type="password" id="repassword" placeholder="请再次输入密码" oninput="checkRePassword()">
+    </div>
+    <button class="register-btn" onclick="register()">注册</button>
+    <div class="tip" id="tip"></div>
+    <div class="link">
+        已有账号？<a href="login.html">立即登录</a>
+    </div>
+</div>
+
+<script>
+    // 密码正则：字母+数字+下划线，6-20位
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*_)[A-Za-z\d_]{6,20}$/;
+    const tip = document.getElementById("tip");
+
+    // 实时校验密码格式
+    function checkPassword() {
+        const password = document.getElementById("password").value;
+        if (password.length === 0) {
+            tip.textContent = "";
+            return;
+        }
+        if (!passwordRegex.test(password)) {
+            tip.textContent = "密码不符合规则！必须包含字母、数字和下划线";
+            tip.style.color = "red";
+        } else {
+            tip.textContent = "✓ 密码格式正确";
+            tip.style.color = "green";
+            // 密码格式正确后，自动校验确认密码
+            checkRePassword();
+        }
+    }
+
+    // 实时校验两次密码是否一致
+    function checkRePassword() {
+        const password = document.getElementById("password").value;
+        const repassword = document.getElementById("repassword").value;
+        if (repassword.length === 0) return;
+
+        if (password !== repassword) {
+            tip.textContent = "两次输入的密码不一致！";
+            tip.style.color = "red";
+        } else {
+            tip.textContent = "✓ 两次密码输入一致";
+            tip.style.color = "green";
+        }
+    }
+
+    async function register() {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const repassword = document.getElementById("repassword").value.trim();
+        tip.style.color = "red";
+
+        // 前端校验
+        if (!username) {
+            tip.textContent = "用户名不能为空";
+            return;
+        }
+        if (!password) {
+            tip.textContent = "密码不能为空";
+            return;
+        }
+        if (!passwordRegex.test(password)) {
+            tip.textContent = "密码必须包含字母、数字和下划线，长度6-20位";
+            return;
+        }
+        if (!repassword) {
+            tip.textContent = "确认密码不能为空";
+            return;
+        }
+        if (password !== repassword) {
+            tip.textContent = "两次输入的密码不一致！";
+            return;
+        }
+
+        // 发送注册请求
+        const res = await fetch("/api/auth/register", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({username, password})
+        });
+        const data = await res.json();
+        if (data.code === 200) {
+            tip.style.color = "green";
+            tip.textContent = "注册成功！即将跳转到登录页";
+            setTimeout(() => {
+                window.location.href = "login.html";
+            }, 1500);
+        } else {
+            tip.textContent = data.msg;
+        }
+    }
+</script>
+</body>
+</html>

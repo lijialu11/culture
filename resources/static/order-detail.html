@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单详情</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Microsoft YaHei';
+            background: #f5f7fa;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header a {
+            color: white;
+            text-decoration: none;
+        }
+        .detail-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .detail-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .detail-item {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .detail-item span {
+            font-weight: bold;
+            color: #667eea;
+        }
+        .order-img {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .btn-group {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .confirm-btn {
+            background: #28a745;
+            color: white;
+        }
+        .feedback-btn {
+            background: #667eea;
+            color: white;
+        }
+        .refresh-btn {
+            background: #17a2b8;
+            color: white;
+        }
+        .logistics-box {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background: #f0f8ff;
+        }
+        .logistics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .courier-info {
+            margin-top: 10px;
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div>订单详情</div>
+    <a href="index.html">返回定制页面</a>
+</div>
+<div class="detail-box">
+    <div class="detail-title">订单编号: <span id="orderId"></span></div>
+    <div class="detail-item">产品类型: <span id="productType"></span></div>
+    <div class="detail-item">尺寸: <span id="size"></span></div>
+    <div class="detail-item">材质: <span id="material"></span></div>
+    <div class="detail-item">定制数量: <span id="quantity"></span></div>
+    <div class="detail-item">期望到货日期: <span id="expectDate"></span></div>
+    <div class="detail-item">期望到货时长: <span id="expectDays"></span> 天</div>
+    <div class="detail-item">定制图案:</div>
+    <img class="order-img" id="orderImg" src="" alt="定制图案">
+    <div class="detail-item">订单状态: <span id="status" style="color: #dc3545; font-weight: bold;"></span></div>
+    <div class="detail-item">创建时间: <span id="createTime"></span></div>
+    <div class="detail-item">联系方式: <span id="contact"></span></div>
+    <div id="logisticsBox" class="logistics-box" style="display: none;">
+        <div class="logistics-header">
+            <h3 style="margin: 0; color: #667eea;">物流信息</h3>
+            <button class="btn refresh-btn" onclick="refreshLogistics()">刷新物流</button>
+        </div>
+        <div class="detail-item">物流公司: <span id="logisticsCompany"></span></div>
+        <div class="detail-item">快递单号: <span id="logisticsTrackingNo"></span></div>
+        <div class="detail-item">物流进度: <span id="logisticsProgress"></span></div>
+        <div class="courier-info">
+            快递员：<span id="courierName"></span> | 联系电话：<span id="courierPhone"></span>
+        </div>
+    </div>
+    <div class="btn-group">
+        <button class="btn refresh-btn" onclick="loadOrder()">刷新订单状态</button>
+        <button class="btn confirm-btn" id="confirmBtn" onclick="confirmReceipt()" style="display: none;">确认收货</button>
+        <button class="btn feedback-btn" onclick="window.location.href='feedback.html?orderId='+getUrlParam('id')">提交反馈</button>
+    </div>
+</div>
+
+<script>
+    // 获取URL参数
+    function getUrlParam(name) {
+        const reg = new RegExp(`(^|&)${name}=([^&]*)(&|$)`);
+        const r = window.location.search.substr(1).match(reg);
+        return r ? decodeURIComponent(r[2]) : '';
+    }
+    const orderId = getUrlParam('id');
+
+    // 加载订单详情 - 每次调用都请求最新数据
+    async function loadOrder() {
+        // 添加时间戳防止缓存
+        const timestamp = new Date().getTime();
+        const res = await fetch(`/api/order/${orderId}?t=${timestamp}`);
+        const data = await res.json();
+        const order = data.data;
+        document.getElementById("orderId").textContent = order.id;
+        document.getElementById("productType").textContent = order.productType;
+        document.getElementById("size").textContent = order.size;
+        document.getElementById("material").textContent = order.material;
+        document.getElementById("quantity").textContent = order.quantity;
+        document.getElementById("expectDate").textContent = order.expectDate ? new Date(order.expectDate).toLocaleDateString() : "未填写";
+        document.getElementById("expectDays").textContent = order.expectDays;
+        document.getElementById("orderImg").src = order.imagePath || "images/bookmark.png";
+        document.getElementById("status").textContent = order.status;
+        document.getElementById("createTime").textContent = new Date(order.createTime).toLocaleString();
+        document.getElementById("contact").textContent = order.contact;
+
+        // 加载最新物流信息
+        loadLogistics();
+
+        // 显示确认收货按钮（仅已发货状态）
+        if (order.status === "已发货") {
+            document.getElementById("confirmBtn").style.display = "block";
+        } else {
+            document.getElementById("confirmBtn").style.display = "none";
+        }
+    }
+
+    // 加载物流信息
+    async function loadLogistics() {
+        const timestamp = new Date().getTime();
+        const res = await fetch(`/api/logistics/${orderId}?t=${timestamp}`);
+        const logisticsData = await res.json();
+        if (logisticsData.data) {
+            document.getElementById("logisticsBox").style.display = "block";
+            document.getElementById("logisticsCompany").textContent = logisticsData.data.company;
+            document.getElementById("logisticsTrackingNo").textContent = logisticsData.data.trackingNo;
+            document.getElementById("logisticsProgress").textContent = logisticsData.data.progress;
+            document.getElementById("courierName").textContent = logisticsData.data.courierName || "未填写";
+            document.getElementById("courierPhone").textContent = logisticsData.data.courierPhone || "未填写";
+        } else {
+            document.getElementById("logisticsBox").style.display = "none";
+        }
+    }
+
+    // 手动刷新物流信息
+    async function refreshLogistics() {
+        await fetch(`/api/logistics/track/${orderId}`);
+        loadLogistics();
+        alert("物流信息已刷新为最新状态！");
+    }
+
+    // 确认收货
+    async function confirmReceipt() {
+        await fetch("/api/order/updateStatus", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: `id=${orderId}&status=已完成`
+        });
+        loadOrder();
+        alert("已确认收货！");
+    }
+
+    // 页面加载时加载最新订单数据
+    window.onload = function() {
+        loadOrder();
+    }
+</script>
+</body>
+</html>
